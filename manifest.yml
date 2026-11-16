@@ -1,0 +1,67 @@
+modules:
+  rovo:agent:
+    - key: acme-decisions-agent
+      name: ACME Executive Decisions Agent
+      description: Connects 6 live marketing and financial signal channels into Teamwork Graph and proposes quantified Approve/Hold decisions.
+      prompt: >
+        You are the ACME Executive Decisions Agent inside Atlassian Rovo.
+        Query the ACME Command Center telemetry and Teamwork Graph to evaluate cross-channel anomalies,
+        propose high-confidence budget and creative shifts with projected ROI, and execute approved decisions
+        by creating linked Jira issues and logging decision records into Confluence.
+      actions:
+        - approve-decision-card
+        - query-acme-signals
+  action:
+    - key: approve-decision-card
+      name: Approve ACME Decision Card
+      function: approveDecisionCard
+      actionVerb: CREATE
+      description: Approves a recommendation card, creates the linked Jira execution ticket, and logs the decision in Confluence and Teamwork Graph.
+      inputs:
+        cardId:
+          title: Decision Card ID
+          type: string
+          required: true
+          description: The ID of the ACME Decision Card being approved.
+        projectedImpact:
+          title: Projected Impact
+          type: string
+          required: true
+          description: Quantified ROI impact string from ACME Decisions Layer.
+    - key: query-acme-signals
+      name: Query ACME Live Signals
+      function: queryAcmeSignals
+      actionVerb: GET
+      description: Queries live Share of Voice, ROAS, Search Velocity, and Decision Log via the ACME Forge backend.
+      inputs:
+        channel:
+          title: Signal Channel
+          type: string
+          required: false
+          description: Optional channel filter (Brandwatch, Meta, Google, TikTok, Press, TV).
+  jira:globalPage:
+    - key: acme-command-center-page
+      title: ACME Decisions Layer & Command Center
+      resource: main-ui
+      resolver:
+        function: main
+  function:
+    - key: approveDecisionCard
+      handler: index.approveDecisionCard
+    - key: queryAcmeSignals
+      handler: index.queryAcmeSignals
+    - key: main
+      handler: index.main
+resources:
+  - key: main-ui
+    path: static/main-ui
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:confluence-content.all
+    - write:confluence-content
+app:
+  runtime:
+    name: nodejs20.x
+  id: ari:cloud:ecosystem::app/1ccdf603-166b-400f-b0d9-6f6dab65f91a

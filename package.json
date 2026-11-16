@@ -1,0 +1,9 @@
+{
+  "name": "acme-decisions-layer-command-center",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@forge/api": "^4.1.0",
+    "@forge/resolver": "^1.6.0"
+  }
+}
