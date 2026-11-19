@@ -76,6 +76,19 @@ test('MCP tools/call executes acme_approve_decision and acme_get_audit_log end-t
   });
   const logBody = JSON.parse(logRes.body);
   assert.equal(logBody.result.structuredContent.entries[0].jiraIssueKey, 'ACME-900');
+
+  // Verify concise aliases (get_active_decisions & approve_decision) work cleanly too
+  const aliasRes = await svc.mcpHandler({
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 5,
+      method: 'tools/call',
+      params: { name: 'get_active_decisions', arguments: { category: 'all' } }
+    })
+  });
+  const aliasBody = JSON.parse(aliasRes.body);
+  assert.equal(aliasBody.result.isError, false);
+  assert.equal(aliasBody.result.structuredContent.decisionCards.length, 4);
 });
 
 test('MCP handler returns JSON-RPC error codes for invalid JSON and unknown tools', async () => {

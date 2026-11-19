@@ -66,9 +66,13 @@ export async function handleMcpRequest(req, handlers) {
 
     const dispatch = {
       acme_query_signals: handlers.queryAcmeSignals,
+      get_active_decisions: handlers.queryAcmeSignals,
       acme_approve_decision: handlers.approveDecisionCard,
+      approve_decision: handlers.approveDecisionCard,
       acme_hold_decision: handlers.holdDecisionCard,
-      acme_get_audit_log: handlers.listDecisionAuditLog
+      hold_decision: handlers.holdDecisionCard,
+      acme_get_audit_log: handlers.listDecisionAuditLog,
+      get_audit_log: handlers.listDecisionAuditLog
     };
 
     const fn = dispatch[toolName];
