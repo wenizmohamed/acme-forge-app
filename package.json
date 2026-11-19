@@ -1,9 +1,19 @@
 {
   "name": "acme-decisions-layer-command-center",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "description": "ACME Decisions Layer & Command Center — Enterprise Strategic Intelligence, Rovo Executive Decisions Agent, Jira v3 & Confluence v2 Dispatcher, Forge KVS Audit Log, and MCP Server built on Atlassian Forge.",
+  "type": "module",
   "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint:manifest": "node scripts/validate-manifest.mjs",
+    "sync:ui": "node scripts/sync-ui.mjs",
+    "verify": "npm run lint:manifest && npm test"
+  },
   "dependencies": {
-    "@forge/api": "^4.1.0",
-    "@forge/resolver": "^1.6.0"
+    "@forge/api": "^8.5.0",
+    "@forge/bridge": "^7.3.0",
+    "@forge/kvs": "^2.1.2",
+    "@forge/resolver": "^2.0.2"
   }
 }

@@ -1,38 +1,171 @@
 modules:
+  rovo:agent:
+    - key: acme-decisions-agent
+      name: ACME Executive Decisions Agent
+      description: >
+        Autonomous executive decision intelligence agent for ACME Decisions Layer &
+        Command Center. Evaluates live market signals, approves or holds strategic
+        decision cards, dispatches Jira issues, publishes Confluence Decision Governance
+        pages, and maintains an immutable Forge KVS audit log with Teamwork Graph context links.
+      prompt: >
+        You are the ACME Executive Decisions Agent embedded in Jira and Confluence.
+        Use query-acme-signals to retrieve real-time market intelligence (Share of Voice,
+        search velocity, ROAS, approved cardholders, and pending decision cards).
+        When an executive asks to approve a recommendation, invoke approve-decision-card
+        to create the Jira tracking issue, publish or append to the Confluence Decision
+        Governance page, and persist the audit record in Forge KVS.
+        When an executive asks to defer a recommendation, invoke hold-decision-card with
+        rationale. Use list-decision-audit-log to review historical decisions and Teamwork
+        Graph links. Always report exact Jira issue keys, Confluence page URLs, and
+        projected business impact.
+      conversationStarters:
+        - What are today's highest-confidence ACME executive decision cards?
+        - Approve decision DEC-001 to shift 40K USD from display to search and log to Jira and Confluence.
+        - Show the recent ACME Decision Audit Log and projected lift.
+      actions:
+        - approve-decision-card
+        - hold-decision-card
+        - query-acme-signals
+        - list-decision-audit-log
+
+  action:
+    - key: approve-decision-card
+      name: Approve Decision Card
+      description: >
+        Approve an ACME strategic decision card: creates a live Jira issue via REST API v3,
+        creates or appends a Confluence Decision Governance page via REST API v2, persists
+        an audit entry in Forge KVS, and returns Teamwork Graph context links.
+      function: rovoApproveDecision
+      actionVerb: CREATE
+      inputs:
+        cardId:
+          title: Decision Card ID
+          type: string
+          required: true
+          description: Decision card identifier (e.g. DEC-001, DEC-002, DEC-003, DEC-004).
+        projectKey:
+          title: Jira Project Key
+          type: string
+          required: false
+          description: Target Jira project key (defaults to configured workspace project or ACME).
+        spaceId:
+          title: Confluence Space ID
+          type: string
+          required: false
+          description: Target Confluence space ID for publishing the Decision Governance page.
+        rationale:
+          title: Executive Rationale
+          type: string
+          required: false
+          description: Optional executive approval note recorded in Jira, Confluence, and Forge KVS.
+
+    - key: hold-decision-card
+      name: Hold Decision Card
+      description: >
+        Defer an ACME strategic decision card to weekly executive review and persist the
+        rationale in the Forge KVS Decision Audit Log.
+      function: rovoHoldDecision
+      actionVerb: UPDATE
+      inputs:
+        cardId:
+          title: Decision Card ID
+          type: string
+          required: true
+          description: Decision card identifier (e.g. DEC-001).
+        rationale:
+          title: Hold Rationale
+          type: string
+          required: false
+          description: Reason for holding this decision for weekly executive review.
+
+    - key: query-acme-signals
+      name: Query ACME Signals
+      description: >
+        Retrieve live ACME strategic signals (Share of Voice, search velocity, ROAS,
+        cardholders, regional pulse) plus current pending and executed decision cards.
+      function: rovoQuerySignals
+      actionVerb: GET
+      inputs:
+        category:
+          title: Signal Category
+          type: string
+          required: false
+          description: Optional filter (all, budget, creative, regional, fix).
+
+    - key: list-decision-audit-log
+      name: List Decision Audit Log
+      description: >
+        Return the persisted ACME Decision Audit Log stored in Forge KVS, including Jira
+        issue keys, Confluence page IDs, and Teamwork Graph links.
+      function: rovoListAuditLog
+      actionVerb: GET
+      inputs:
+        limit:
+          title: Max Entries
+          type: number
+          required: false
+          description: Maximum number of audit entries to return (default 20).
+
   jira:globalPage:
     - key: acme-command-center-page
       title: ACME Decisions Layer & Command Center
       resource: main-ui
       resolver:
-        function: main
+        function: resolver
+
   confluence:globalPage:
     - key: acme-confluence-decisions-page
       title: ACME Executive Decisions Layer
       route: acme-decisions
       resource: main-ui
       resolver:
-        function: main
+        function: resolver
+
+  confluence:macro:
+    - key: acme-executive-scorecard
+      title: ACME Executive Scorecard & Decisions
+      description: Embed the live ACME Decisions Layer, Rovo governance controls, and KVS audit log on a Confluence page.
+      resource: main-ui
+      resolver:
+        function: resolver
+
   webtrigger:
+    - key: acme-mcp-endpoint
+      function: mcpHandler
     - key: acme-rovo-decision-trigger
-      function: approveDecisionCard
+      function: rovoApproveDecision
     - key: acme-signals-mcp-trigger
-      function: queryAcmeSignals
+      function: rovoQuerySignals
+
   function:
-    - key: approveDecisionCard
+    - key: resolver
+      handler: index.handler
+    - key: rovoApproveDecision
       handler: index.approveDecisionCard
-    - key: queryAcmeSignals
+    - key: rovoHoldDecision
+      handler: index.holdDecisionCard
+    - key: rovoQuerySignals
       handler: index.queryAcmeSignals
-    - key: main
-      handler: index.main
+    - key: rovoListAuditLog
+      handler: index.listDecisionAuditLog
+    - key: mcpHandler
+      handler: index.mcpHandler
+
 resources:
   - key: main-ui
     path: static/main-ui
+
 permissions:
   scopes:
+    - storage:app
     - read:jira-work
     - write:jira-work
+    - read:page:confluence
+    - write:page:confluence
+    - read:space:confluence
     - read:confluence-content.all
     - write:confluence-content
+
 app:
   runtime:
     name: nodejs22.x

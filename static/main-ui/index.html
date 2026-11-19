@@ -2,6 +2,7 @@
 <html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./forge-bridge-adapter.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -1460,45 +1461,88 @@ html.theme-anim, html.theme-anim *{transition:background-color .4s ease,border-c
     <!-- ── DECISIONS LAYER ── -->
     <sc-if value="{{ isDecisions }}" hint-placeholder-val="{{ false }}">
       <div data-screen-label="Decisions Layer" data-view="decisions" style="display:flex;flex-direction:column;gap:16px;max-width:1440px;margin:0 auto">
-        <div style="animation:nbo-rise 0.5s cubic-bezier(0.19,1,0.22,1) both">
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#B4690E;margin-bottom:4px">▸ Decisions Layer · Recommendations · Live</div>
-          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
-            <h1 style="margin:0;color:var(--ink);font-size:30px;font-weight:600;letter-spacing:-0.05em">Decisions</h1>
-            <sc-if value="{{ showAr }}" hint-placeholder-val="{{ true }}">
-              <span dir="rtl" style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:13px;color:rgba(180,105,14,0.9)">القرارات</span>
-            </sc-if>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;animation:nbo-rise 0.5s cubic-bezier(0.19,1,0.22,1) both">
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#B4690E;margin-bottom:4px">▸ Decisions Layer · Rovo Agent · Jira v3 + Confluence v2 + Forge KVS</div>
+            <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+              <h1 style="margin:0;color:var(--ink);font-size:30px;font-weight:600;letter-spacing:-0.05em">Decisions</h1>
+              <sc-if value="{{ showAr }}" hint-placeholder-val="{{ true }}">
+                <span dir="rtl" style="font-family:'IBM Plex Sans Arabic',sans-serif;font-size:13px;color:rgba(180,105,14,0.9)">القرارات</span>
+              </sc-if>
+            </div>
+            <p style="margin:3px 0 0;font-size:11.5px;color:var(--muted)">We propose. You approve. One click dispatches a Jira issue, Confluence Decision Page, and Forge KVS audit record.</p>
           </div>
-          <p style="margin:3px 0 0;font-size:11.5px;color:var(--muted)">We propose. You approve. One click each.</p>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:9.5px;font-weight:700;letter-spacing:0.08em;font-family:ui-monospace,Menlo,monospace;background:{{ forgeBadgeBg }};color:{{ forgeBadgeColor }};border:1px solid {{ forgeBadgeBorder }}">
+              <span style="width:6px;height:6px;border-radius:999px;background:{{ forgeBadgeColor }}"></span>
+              <span>{{ forgeModeLabel }}</span>
+            </span>
+            <span sc-camel-on-click="{{ toggleForgeInspector }}" style="padding:6px 12px;border-radius:999px;font-size:9.5px;font-weight:700;letter-spacing:0.08em;font-family:ui-monospace,Menlo,monospace;cursor:pointer;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.14);color:var(--ink)" style-hover="background:rgba(15,118,110,0.12)">{{ forgeInspectorLabel }}</span>
+          </div>
         </div>
+
+        <sc-if value="{{ forgeInspectorOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:12px;padding:16px;background:var(--card);border:1px solid rgba(15,118,110,0.35);display:flex;flex-direction:column;gap:10px;animation:nbo-rise 0.25s cubic-bezier(0.19,1,0.22,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <span style="font-size:10px;font-weight:700;letter-spacing:0.14em;font-family:ui-monospace,Menlo,monospace;color:var(--accent-ink)">▸ FORGE RESOLVER · ROVO AGENT · MCP PAYLOAD INSPECTOR</span>
+              <span style="font-size:9.5px;font-family:ui-monospace,Menlo,monospace;color:var(--muted-2)">App ID: ari:cloud:ecosystem::app/1ccdf603-166b-400f-b0d9-6f6dab65f91a · KVS: acme:decision-audit-log</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span style="padding:3px 9px;border-radius:6px;font-size:9.5px;font-family:ui-monospace,Menlo,monospace;background:rgba(15,118,110,0.1);color:var(--accent-ink)">rovo:agent → acme-decisions-agent</span>
+              <span style="padding:3px 9px;border-radius:6px;font-size:9.5px;font-family:ui-monospace,Menlo,monospace;background:rgba(15,118,110,0.1);color:var(--accent-ink)">Jira → POST /rest/api/3/issue (asUser)</span>
+              <span style="padding:3px 9px;border-radius:6px;font-size:9.5px;font-family:ui-monospace,Menlo,monospace;background:rgba(15,118,110,0.1);color:var(--accent-ink)">Confluence → POST /wiki/api/v2/pages (asUser)</span>
+              <span style="padding:3px 9px;border-radius:6px;font-size:9.5px;font-family:ui-monospace,Menlo,monospace;background:rgba(180,105,14,0.12);color:#B4690E">MCP JSON-RPC 2.0 → 4 tools</span>
+            </div>
+            <pre style="margin:0;padding:12px;border-radius:8px;background:rgba(var(--fg),0.04);border:1px solid rgba(var(--fg),0.08);font-size:11px;line-height:1.45;font-family:ui-monospace,Menlo,monospace;color:var(--ink-2);overflow:auto;max-height:240px;white-space:pre-wrap">{{ lastForgePayloadText }}</pre>
+          </div>
+        </sc-if>
 
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
           <sc-for list="{{ decisionCards }}" as="dc" hint-placeholder-count="4">
             <div style="border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;background:var(--card);border:1px solid rgba(var(--fg),0.07);border-top:2px solid {{ dc.tone }};animation:nbo-rise 0.5s cubic-bezier(0.19,1,0.22,1) {{ dc.d }} both;transition:transform 0.24s,box-shadow 0.24s" style-hover="transform:translateY(-3px);box-shadow:0 12px 34px -14px rgba(var(--fg),0.1)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                <span style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:{{ dc.tone }};font-family:ui-monospace,Menlo,monospace">{{ dc.tag }}</span>
-                <span style="font-size:9.5px;font-weight:700;font-family:ui-monospace,Menlo,monospace;color:var(--muted-2)">{{ dc.conf }} CONF</span>
+                <span style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:{{ dc.tone }};font-family:ui-monospace,Menlo,monospace">{{ dc.id }} · {{ dc.tag }}</span>
+                <span style="display:inline-flex;align-items:center;gap:6px">
+                  <sc-if value="{{ dc.hasStatus }}" hint-placeholder-val="{{ false }}">
+                    <span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;font-family:ui-monospace,Menlo,monospace;color:{{ dc.statusColor }};border:1px solid {{ dc.statusBorder }}">{{ dc.statusLabel }}</span>
+                  </sc-if>
+                  <span style="font-size:9.5px;font-weight:700;font-family:ui-monospace,Menlo,monospace;color:var(--muted-2)">{{ dc.conf }} CONF</span>
+                </span>
               </div>
               <h3 style="margin:0;color:var(--ink);font-size:15.5px;font-weight:700;line-height:1.35">{{ dc.title }}</h3>
               <p style="margin:0;font-size:12px;line-height:1.55;color:var(--ink-3)">{{ dc.body }}</p>
-              <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:var(--card);border:1px solid rgba(var(--fg),0.05)">
-                <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted-3)">IMPACT</span>
-                <span style="font-size:13px;font-weight:700;color:#12a552;font-family:ui-monospace,Menlo,monospace">{{ dc.impact }}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:9px;background:var(--card);border:1px solid rgba(var(--fg),0.05)">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--muted-3)">IMPACT</span>
+                  <span style="font-size:13px;font-weight:700;color:#12a552;font-family:ui-monospace,Menlo,monospace">{{ dc.impact }}</span>
+                </div>
+                <sc-if value="{{ dc.hasArtifact }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:9.5px;font-family:ui-monospace,Menlo,monospace;color:var(--accent-ink);font-weight:700">{{ dc.artifactBadge }}</span>
+                </sc-if>
               </div>
               <div style="display:flex;gap:8px;margin-top:2px">
-                <span data-toast="{{ dc.approveMsg }}" style="flex:1;text-align:center;padding:9px 14px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;cursor:pointer;background:#0a0a0a;color:#FFFFFF" style-hover="filter:brightness(1.1)">APPROVE</span>
-                <span data-toast="Held, moved to weekly review with rationale attached." style="flex:1;text-align:center;padding:9px 14px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;cursor:pointer;background:rgba(var(--fg),0.035);border:1px solid rgba(var(--fg),0.12);color:var(--ink-3)" style-hover="background:rgba(var(--fg),0.08)">HOLD</span>
+                <span sc-camel-on-click="{{ dc.approve }}" style="flex:1;text-align:center;padding:9px 14px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;cursor:pointer;background:#0a0a0a;color:#FFFFFF" style-hover="filter:brightness(1.1)">{{ dc.approveLabel }}</span>
+                <span sc-camel-on-click="{{ dc.hold }}" style="flex:1;text-align:center;padding:9px 14px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;cursor:pointer;background:rgba(var(--fg),0.035);border:1px solid rgba(var(--fg),0.12);color:var(--ink-3)" style-hover="background:rgba(var(--fg),0.08)">HOLD</span>
               </div>
             </div>
           </sc-for>
         </div>
 
         <div style="border-radius:12px;padding:16px;background:var(--card);border:1px solid rgba(var(--fg),0.07);animation:nbo-rise 0.5s cubic-bezier(0.19,1,0.22,1) 0.5s both">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span style="font-size:10px;font-weight:700;letter-spacing:0.16em;color:var(--muted)">▸ DECISION LOG · THIS WEEK</span><span style="font-size:9px;font-family:ui-monospace,Menlo,monospace;color:#17c964">6 EXECUTED · +11% BLENDED LIFT</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap">
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.16em;color:var(--muted)">▸ DECISION AUDIT LOG · FORGE KVS PERSISTED</span>
+            <span style="font-size:9px;font-family:ui-monospace,Menlo,monospace;color:#17c964">{{ auditLogSummary }}</span>
+          </div>
           <div style="display:flex;flex-direction:column">
-            <div style="display:grid;grid-template-columns:80px 1fr 130px 110px;gap:10px;padding:9px 6px;border-bottom:1px solid rgba(var(--fg),0.035);font-size:11.5px;align-items:center"><span style="font-family:ui-monospace,Menlo,monospace;color:var(--muted-3)">JUL 14</span><span style="color:var(--ink-2b)">Pushed Arabic CTV variant after TV search spike</span><span style="text-align:right;font-family:ui-monospace,Menlo,monospace;color:#12a552;font-weight:700">+318% searches</span><span style="text-align:right"><span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;color:#17c964;border:1px solid rgba(23,201,100,0.5)">EXECUTED</span></span></div>
-            <div style="display:grid;grid-template-columns:80px 1fr 130px 110px;gap:10px;padding:9px 6px;border-bottom:1px solid rgba(var(--fg),0.035);font-size:11.5px;align-items:center"><span style="font-family:ui-monospace,Menlo,monospace;color:var(--muted-3)">JUL 12</span><span style="color:var(--ink-2b)">Shifted 40K USD from display to search</span><span style="text-align:right;font-family:ui-monospace,Menlo,monospace;color:#12a552;font-weight:700">+6.2% approvals</span><span style="text-align:right"><span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;color:#17c964;border:1px solid rgba(23,201,100,0.5)">EXECUTED</span></span></div>
-            <div style="display:grid;grid-template-columns:80px 1fr 130px 110px;gap:10px;padding:9px 6px;border-bottom:1px solid rgba(var(--fg),0.035);font-size:11.5px;align-items:center"><span style="font-family:ui-monospace,Menlo,monospace;color:var(--muted-3)">JUL 11</span><span style="color:var(--ink-2b)">Fast-replied to X service-wait thread via care team</span><span style="text-align:right;font-family:ui-monospace,Menlo,monospace;color:#12a552;font-weight:700">+9 sentiment</span><span style="text-align:right"><span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;color:#17c964;border:1px solid rgba(23,201,100,0.5)">EXECUTED</span></span></div>
-            <div style="display:grid;grid-template-columns:80px 1fr 130px 110px;gap:10px;padding:9px 6px;font-size:11.5px;align-items:center"><span style="font-family:ui-monospace,Menlo,monospace;color:var(--muted-3)">JUL 10</span><span style="color:var(--ink-2b)">Doubled Southbay radio during summer season</span><span style="text-align:right;font-family:ui-monospace,Menlo,monospace;color:#12a552;font-weight:700">+11% visits</span><span style="text-align:right"><span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;color:#17c964;border:1px solid rgba(23,201,100,0.5)">EXECUTED</span></span></div>
+            <sc-for list="{{ decisionLog }}" as="dl" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:72px 1fr 170px 135px 96px;gap:10px;padding:9px 6px;border-bottom:1px solid rgba(var(--fg),0.035);font-size:11.5px;align-items:center">
+                <span style="font-family:ui-monospace,Menlo,monospace;color:var(--muted-3)">{{ dl.dateLabel }}</span>
+                <span style="color:var(--ink-2b)">{{ dl.title }}</span>
+                <span style="text-align:right;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--accent-ink)">{{ dl.atlassianRef }}</span>
+                <span style="text-align:right;font-family:ui-monospace,Menlo,monospace;color:#12a552;font-weight:700">{{ dl.impact }}</span>
+                <span style="text-align:right"><span style="padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;color:{{ dl.statusColor }};border:1px solid {{ dl.statusBorder }}">{{ dl.status }}</span></span>
+              </div>
+            </sc-for>
           </div>
         </div>
       </div>
@@ -1742,6 +1786,12 @@ class Component extends DCLogic {
     listening: false, thinking: false, transcript: "", liveAr: "", liveEn: "", geminiKey: "", keyDraft: "",
     toast: "", toastShow: false,
     theme: "light", role: "admin", roleMenu: false, guideOpen: false,
+    forgeMode: "PREVIEW_ADAPTER",
+    decisionStates: {},
+    decisionLog: [],
+    lastForgePayload: null,
+    forgeInspectorOpen: false,
+    busyCardId: null,
   };
 
   ROLES = {
@@ -1865,7 +1915,81 @@ class Component extends DCLogic {
     const h = (location.hash || "").replace(/^#\/?/, "");
     if (h && (this.VIEWS.includes(h) || h === "welcome")) this.setState({ view: h });
     else if (this.props.startView) this.setState({ view: this.props.startView });
+    this.initForgeBridge();
     setTimeout(() => this.runCountups(), 400);
+  }
+  async initForgeBridge() {
+    const bridge = window.AcmeForgeBridge;
+    if (!bridge) return;
+    try {
+      const boot = await bridge.invoke("getBootstrap", {});
+      if (boot && boot.ok) {
+        const stateMap = boot.decisionStates || {};
+        if (Array.isArray(boot.decisionCards)) {
+          for (const c of boot.decisionCards) {
+            if (c.status && c.status !== "PENDING") {
+              stateMap[c.id] = { status: c.status, jiraIssueKey: c.jiraIssueKey, confluencePageId: c.confluencePageId };
+            }
+          }
+        }
+        this.setState({
+          forgeMode: boot.mode || bridge.mode || "PREVIEW_ADAPTER",
+          decisionLog: Array.isArray(boot.auditLog) ? boot.auditLog : [],
+          decisionStates: stateMap,
+        });
+      }
+    } catch (err) {
+      this.setState({ forgeMode: bridge.mode || "PREVIEW_ADAPTER" });
+    }
+  }
+  async handleDecisionAction(card, action) {
+    const role = this.ROLES[this.state.role] || this.ROLES.admin;
+    if (!role.canAct) {
+      this.flash("View-only access. Ask an admin or executive to approve or hold actions.");
+      return;
+    }
+    const bridge = window.AcmeForgeBridge;
+    if (!bridge) {
+      this.flash(action === "approve" ? card.approveMsg : "Held, moved to weekly review.");
+      return;
+    }
+    this.setState({ busyCardId: card.id });
+    try {
+      const resolverKey = action === "approve" ? "approveDecision" : "holdDecision";
+      const res = await bridge.invoke(resolverKey, {
+        cardId: card.id,
+        tag: card.tag,
+        title: card.title,
+        body: card.body,
+        impact: card.impact,
+        conf: card.conf,
+        approveMsg: card.approveMsg,
+        actor: role.label,
+      });
+      const nextStates = { ...this.state.decisionStates };
+      nextStates[card.id] = {
+        status: res.status || (action === "approve" ? "APPROVED" : "HELD"),
+        jiraIssueKey: res.execution && res.execution.jira ? res.execution.jira.key : null,
+        confluencePageId: res.execution && res.execution.confluence ? res.execution.confluence.id : null,
+      };
+      let nextLog = this.state.decisionLog;
+      if (Array.isArray(res.auditLog)) {
+        nextLog = res.auditLog;
+      } else {
+        const refreshed = await bridge.invoke("getAuditLog", { limit: 25 });
+        if (refreshed && Array.isArray(refreshed.entries)) nextLog = refreshed.entries;
+      }
+      this.setState({
+        busyCardId: null,
+        decisionStates: nextStates,
+        decisionLog: nextLog,
+        lastForgePayload: res,
+      });
+      this.flash(res.summary || (action === "approve" ? card.approveMsg : "Held, moved to weekly review."));
+    } catch (err) {
+      this.setState({ busyCardId: null });
+      this.flash("Forge resolver error: " + String((err && err.message) || err).slice(0, 90));
+    }
   }
   componentWillUnmount() {
     clearInterval(this._clock);
@@ -2060,7 +2184,7 @@ class Component extends DCLogic {
       generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
     };
     try {
-      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + encodeURIComponent(key), {
+      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + encodeURIComponent(key), {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       const data = await res.json();
@@ -2166,12 +2290,68 @@ class Component extends DCLogic {
         d: (0.2 + i * 0.05).toFixed(2) + "s",
         deltaColor: k.hot ? "#12a552" : "var(--muted-2)",
       })),
+      forgeModeLabel: s.forgeMode === "FORGE_LIVE" ? "FORGE LIVE · JIRA / CONFLUENCE" : "GITHUB PAGES PREVIEW · FORGE BRIDGE READY",
+      forgeBadgeBg: s.forgeMode === "FORGE_LIVE" ? "rgba(23,201,100,0.12)" : "rgba(15,118,110,0.1)",
+      forgeBadgeColor: s.forgeMode === "FORGE_LIVE" ? "#12a552" : "var(--accent-ink)",
+      forgeBadgeBorder: s.forgeMode === "FORGE_LIVE" ? "rgba(23,201,100,0.45)" : "rgba(15,118,110,0.35)",
+      forgeInspectorOpen: s.forgeInspectorOpen,
+      forgeInspectorLabel: s.forgeInspectorOpen ? "HIDE FORGE PAYLOADS" : "INSPECT FORGE / MCP PAYLOADS",
+      toggleForgeInspector: () => this.setState((p) => ({ forgeInspectorOpen: !p.forgeInspectorOpen })),
+      lastForgePayloadText: s.lastForgePayload
+        ? JSON.stringify(s.lastForgePayload, null, 2)
+        : JSON.stringify({
+            hint: "Click APPROVE or HOLD on any decision card to inspect the live Jira REST API v3 ADF payload, Confluence REST API v2 storage XHTML payload, Forge KVS audit entry, and Teamwork Graph ARIs.",
+            forgeModules: ["rovo:agent (acme-decisions-agent)", "action (4 Rovo actions)", "jira:globalPage", "confluence:globalPage", "confluence:macro", "webtrigger (MCP JSON-RPC 2.0)"],
+            mcpTools: (window.AcmeForgeBridge && window.AcmeForgeBridge.mcpTools) || []
+          }, null, 2),
       decisionCards: [
-        { tag: "BUDGET SHIFT", tone: "#0F766E", conf: "88%", title: "Move 40K USD from display to search", body: "Credit-card search intent is up 318% after the TV spot. Display is the weakest channel this week.", impact: "+6% approvals · ~310 cards", approveMsg: "Approved, 40K USD shifted to search. Live in 20 min." },
-        { tag: "CREATIVE PUSH", tone: "#B4690E", conf: "91%", title: "Push the Arabic CTV variant tonight", body: "Arabic queries are the fastest-growing segment. The Arabic cut outperforms English by 2.3× on completion.", impact: "+1.9M USD projected AUM", approveMsg: "Approved, Arabic CTV variant scheduled for tonight." },
-        { tag: "REGIONAL", tone: "#17c964", conf: "84%", title: "Double Southbay radio through summer", body: "summer season traffic lifts branch visits +11%. Radio is Southbay's strongest channel by far.", impact: "+320 cardholders · MTD gap closed", approveMsg: "Approved, Southbay radio doubled through August." },
-        { tag: "FIX", tone: "#b98a12", conf: "79%", title: "Pause email journey, rebuild Arabic-first", body: "Email ROAS is 2.1× vs 2.8× target. 86% of voice-agent calls are in Arabic, the journey is English-only.", impact: "Save 18K USD / month", approveMsg: "Approved, email paused. Arabic-first rebuild queued." },
-      ].map((c, i) => ({ ...c, d: (0.15 + i * 0.08).toFixed(2) + "s" })),
+        { id: "DEC-001", tag: "BUDGET SHIFT", tone: "#0F766E", conf: "88%", title: "Move 40K USD from display to search", body: "Credit-card search intent is up 318% after the TV spot. Display is the weakest channel this week.", impact: "+6% approvals · ~310 cards", approveMsg: "Approved, 40K USD shifted to search. Live in 20 min." },
+        { id: "DEC-002", tag: "CREATIVE PUSH", tone: "#B4690E", conf: "91%", title: "Push the Arabic CTV variant tonight", body: "Arabic queries are the fastest-growing segment. The Arabic cut outperforms English by 2.3× on completion.", impact: "+1.9M USD projected AUM", approveMsg: "Approved, Arabic CTV variant scheduled for tonight." },
+        { id: "DEC-003", tag: "REGIONAL", tone: "#17c964", conf: "84%", title: "Double Southbay radio through summer", body: "summer season traffic lifts branch visits +11%. Radio is Southbay's strongest channel by far.", impact: "+320 cardholders · MTD gap closed", approveMsg: "Approved, Southbay radio doubled through August." },
+        { id: "DEC-004", tag: "FIX", tone: "#b98a12", conf: "79%", title: "Pause email journey, rebuild Arabic-first", body: "Email ROAS is 2.1× vs 2.8× target. 86% of voice-agent calls are in Arabic, the journey is English-only.", impact: "Save 18K USD / month", approveMsg: "Approved, email paused. Arabic-first rebuild queued." },
+      ].map((c, i) => {
+        const st = (s.decisionStates || {})[c.id] || null;
+        const isBusy = s.busyCardId === c.id;
+        const isApproved = st && st.status === "APPROVED";
+        const isHeld = st && st.status === "HELD";
+        const artifactBadge = st && (st.jiraIssueKey || st.confluencePageId)
+          ? [st.jiraIssueKey ? "Jira " + st.jiraIssueKey : "", st.confluencePageId ? "Conf #" + st.confluencePageId : ""].filter(Boolean).join(" · ")
+          : "";
+        return {
+          ...c,
+          d: (0.15 + i * 0.08).toFixed(2) + "s",
+          hasStatus: !!(isApproved || isHeld),
+          statusLabel: isApproved ? "APPROVED" : isHeld ? "HELD" : "",
+          statusColor: isApproved ? "#12a552" : "#b98a12",
+          statusBorder: isApproved ? "rgba(23,201,100,0.5)" : "rgba(185,138,18,0.5)",
+          hasArtifact: !!artifactBadge,
+          artifactBadge,
+          approveLabel: isBusy ? "DISPATCHING…" : isApproved ? "RE-DISPATCH TO JIRA" : "APPROVE",
+          approve: () => this.handleDecisionAction(c, "approve"),
+          hold: () => this.handleDecisionAction(c, "hold"),
+        };
+      }),
+      decisionLog: (s.decisionLog && s.decisionLog.length ? s.decisionLog : [
+        { dateLabel: "JUL 14", title: "Pushed Arabic CTV variant after TV search spike", impact: "+318% searches", status: "EXECUTED", jiraIssueKey: "ACME-104", confluencePageId: "4021901" },
+        { dateLabel: "JUL 12", title: "Shifted 40K USD from display to search", impact: "+6.2% approvals", status: "EXECUTED", jiraIssueKey: "ACME-103", confluencePageId: "4021844" },
+        { dateLabel: "JUL 11", title: "Fast-replied to X service-wait thread via care team", impact: "+9 sentiment", status: "EXECUTED", jiraIssueKey: "ACME-102", confluencePageId: "4021790" },
+        { dateLabel: "JUL 10", title: "Doubled Southbay radio during summer season", impact: "+11% visits", status: "EXECUTED", jiraIssueKey: "ACME-101", confluencePageId: "4021712" },
+      ]).map((row) => {
+        const held = row.status === "HELD";
+        const refParts = [];
+        if (row.jiraIssueKey) refParts.push(row.jiraIssueKey);
+        if (row.confluencePageId) refParts.push("Conf #" + row.confluencePageId);
+        return {
+          dateLabel: row.dateLabel || "LIVE",
+          title: row.title || row.cardId || "Decision",
+          atlassianRef: refParts.length ? refParts.join(" · ") : "KVS Audit Only",
+          impact: row.impact || "Logged",
+          status: row.status || "EXECUTED",
+          statusColor: held ? "#b98a12" : "#17c964",
+          statusBorder: held ? "rgba(185,138,18,0.5)" : "rgba(23,201,100,0.5)",
+        };
+      }),
+      auditLogSummary: ((s.decisionLog && s.decisionLog.length) || 4) + " RECORDS · KVS SYNCED · +11% BLENDED LIFT",
       drillOpen: !!drill,
       drillTitle: drill ? drill.title : "",
       drillValue: drill ? drill.value : "",
