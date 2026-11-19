@@ -2,25 +2,15 @@ modules:
   rovo:agent:
     - key: acme-decisions-agent
       name: ACME Executive Decisions Agent
-      description: >
-        Autonomous executive decision intelligence agent for ACME Decisions Layer &
-        Command Center. Evaluates live market signals, approves or holds strategic
-        decision cards, dispatches Jira issues, publishes Confluence Decision Governance
-        pages, and maintains an immutable Forge KVS audit log with Teamwork Graph context links.
-      prompt: >
-        You are the ACME Executive Decisions Agent embedded in Jira and Confluence.
-        Use query-acme-signals to retrieve real-time market intelligence (Share of Voice,
-        search velocity, ROAS, approved cardholders, and pending decision cards).
-        When an executive asks to approve a recommendation, invoke approve-decision-card
-        to create the Jira tracking issue, publish or append to the Confluence Decision
-        Governance page, and persist the audit record in Forge KVS.
-        When an executive asks to defer a recommendation, invoke hold-decision-card with
-        rationale. Use list-decision-audit-log to review historical decisions and Teamwork
-        Graph links. Always report exact Jira issue keys, Confluence page URLs, and
-        projected business impact.
+      description: Helps teams review ACME market signals, approve or hold decision cards, create Jira issues, and publish Confluence governance records.
+      prompt: |
+        You help teams review ACME marketing and executive decision cards in Jira and Confluence.
+        Use query-acme-signals to check current metrics and decision cards.
+        Use approve-decision-card to log an approved card to Jira, Confluence, and Forge KVS, or hold-decision-card to defer it.
+        Use list-decision-audit-log to summarize past decisions and always report the Jira issue key and Confluence page link.
       conversationStarters:
-        - What are today's highest-confidence ACME executive decision cards?
-        - Approve decision DEC-001 to shift 40K USD from display to search and log to Jira and Confluence.
+        - What are today's top ACME executive decision cards?
+        - Approve DEC-001 to shift 40K USD to search and log to Jira.
         - Show the recent ACME Decision Audit Log and projected lift.
       actions:
         - approve-decision-card
@@ -121,7 +111,7 @@ modules:
       resolver:
         function: resolver
 
-  confluence:macro:
+  macro:
     - key: acme-executive-scorecard
       title: ACME Executive Scorecard & Decisions
       description: Embed the live ACME Decisions Layer, Rovo governance controls, and KVS audit log on a Confluence page.

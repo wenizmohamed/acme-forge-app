@@ -21,7 +21,7 @@ const requiredModules = [
   'action:',
   'jira:globalPage:',
   'confluence:globalPage:',
-  'confluence:macro:',
+  'macro:',
   'webtrigger:',
   'function:'
 ];

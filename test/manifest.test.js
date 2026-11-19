@@ -16,7 +16,7 @@ test('manifest.yml declares Rovo Agent, Actions, Jira/Confluence modules, KVS sc
   assert.match(manifest, /action:/);
   assert.match(manifest, /jira:globalPage:/);
   assert.match(manifest, /confluence:globalPage:/);
-  assert.match(manifest, /confluence:macro:/);
+  assert.match(manifest, /\n\s+macro:/);
   assert.match(manifest, /webtrigger:/);
   assert.match(manifest, /-\s*storage:app/);
   assert.match(manifest, /-\s*write:jira-work/);
