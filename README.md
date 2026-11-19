@@ -1,10 +1,15 @@
 # ACME Decisions Layer & Command Center (Atlassian Codegeist 2026)
 
-Enterprise Strategic Intelligence, **Rovo Executive Decisions Agent**, **Jira Cloud REST v3 Issue Dispatcher**, **Confluence Cloud REST v2 Decision Governance Publisher**, **Forge KVS Persistent Audit Log**, and **MCP JSON-RPC 2.0 Webtrigger Server** built on **Atlassian Forge (`nodejs22.x`)**.
+[![Devpost Submission](https://img.shields.io/badge/Devpost-Codegeist%202026%20Submission-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/acme-decisions-layer-command-center)
+[![Live Preview](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge)](https://wenizmohamed.github.io/acme-forge-app/)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/TcxlX3F-oIQ)
 
-- **Atlassian Forge App ID:** `ari:cloud:ecosystem::app/1ccdf603-166b-400f-b0d9-6f6dab65f91a`
+Enterprise Strategic Intelligence, **Rovo Executive Decisions Agent**, **Jira Cloud REST v3 Issue Dispatcher**, **Confluence Cloud REST v2 Decision Governance Publisher**, **Forge KVS Persistent Audit Log**, and **MCP JSON-RPC 2.0 Webtrigger Server** built on **Atlassian Forge (`nodejs22.x`)** and deployed live to Forge Production (`v3.0.0`).
+
+- **Devpost Submission (Like & Comment):** [https://devpost.com/software/acme-decisions-layer-command-center](https://devpost.com/software/acme-decisions-layer-command-center)
+- **Atlassian Forge App ID:** `ari:cloud:ecosystem::app/1ccdf603-166b-400f-b0d9-6f6dab65f91a` (Production `v3.0.0`)
 - **Live Interactive Preview (GitHub Pages):** [https://wenizmohamed.github.io/acme-forge-app/](https://wenizmohamed.github.io/acme-forge-app/)
-- **Demo Video:** [https://youtu.be/EGcZE_zgaHE](https://youtu.be/EGcZE_zgaHE)
+- **Demo Video (v2):** [https://youtu.be/TcxlX3F-oIQ](https://youtu.be/TcxlX3F-oIQ)
 
 ---
 
