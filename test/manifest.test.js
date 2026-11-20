@@ -86,6 +86,9 @@ test('static/main-ui assets stay synced with root GitHub Pages assets and contai
   assert.match(staticHtml, /id="teamwork-scope-inspector"/);
   assert.match(staticHtml, /id="export-brief-md"/);
   assert.match(staticHtml, /id="export-brief-json"/);
+  assert.match(staticHtml, /id="acme-guide-toggle"/);
+  assert.match(staticHtml, /id="acme-guide-popover"/);
+  assert.doesNotMatch(staticHtml, /guideOpen:\s*!seen/, 'Onboarding guide popover must start closed by default so it never blocks #teamwork-scope-inspector');
   assert.doesNotMatch(staticHtml, /gemini-2\.0-flash|gemini-2\.5-/, 'Legacy Gemini model references must not exist');
 });
 

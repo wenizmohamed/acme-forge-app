@@ -783,7 +783,7 @@ html.theme-anim, html.theme-anim *{transition:background-color .4s ease,border-c
     </div>
     <div style="flex:1"></div>
     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-      <div sc-camel-on-click="{{ toggleGuide }}" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--ink-2);border:1px solid rgba(var(--fg),0.1);background:{{ guideBtnBg }}" style-hover="border-color:rgba(15,118,110,0.5)"><span style="width:15px;height:15px;border-radius:999px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800">?</span><span>Guide</span></div>
+      <div id="acme-guide-toggle" sc-camel-on-click="{{ toggleGuide }}" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--ink-2);border:1px solid rgba(var(--fg),0.1);background:{{ guideBtnBg }}" style-hover="border-color:rgba(15,118,110,0.5)"><span style="width:15px;height:15px;border-radius:999px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800">?</span><span>Guide</span></div>
       <div sc-camel-on-click="{{ toggleTheme }}" title="Switch day / night mode" style="display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;cursor:pointer;border:1px solid rgba(var(--fg),0.1);background:rgba(var(--fg),0.04)">
         <span style="padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;color:{{ dayColor }};background:{{ dayBg }};transition:all .3s ease">Day</span>
         <span style="padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;color:{{ nightColor }};background:{{ nightBg }};transition:all .3s ease">Night</span>
@@ -1929,7 +1929,7 @@ html.theme-anim, html.theme-anim *{transition:background-color .4s ease,border-c
 
   <!-- ══ GUIDE ══ -->
   <sc-if value="{{ guideVisible }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;right:20px;bottom:52px;z-index:80;width:330px;max-width:calc(100vw - 40px);border-radius:14px;background:var(--bg);border:1px solid rgba(var(--fg),0.1);box-shadow:0 20px 60px rgba(0,0,0,0.2);padding:16px;display:flex;flex-direction:column;gap:10px;animation:nbo-rise .4s cubic-bezier(0.19,1,0.22,1) both">
+    <div id="acme-guide-popover" style="position:fixed;right:20px;bottom:52px;z-index:80;width:330px;max-width:calc(100vw - 40px);border-radius:14px;background:var(--bg);border:1px solid rgba(var(--fg),0.1);box-shadow:0 20px 60px rgba(0,0,0,0.2);padding:16px;display:flex;flex-direction:column;gap:10px;animation:nbo-rise .4s cubic-bezier(0.19,1,0.22,1) both">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <span style="font-size:9.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent-ink)">Guide · {{ guideProgress }}</span>
         <span sc-camel-on-click="{{ closeGuide }}" style="width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px" style-hover="background:rgba(var(--fg),0.06)">×</span>
@@ -2114,9 +2114,8 @@ class Component extends DCLogic {
     try {
       const th = localStorage.getItem("acme_theme") || "light";
       const ro = localStorage.getItem("acme_role") || "admin";
-      const seen = localStorage.getItem("acme_guide_seen") === "1";
       document.documentElement.dataset.theme = th;
-      this.setState({ theme: th, role: this.ROLES[ro] ? ro : "admin", guideOpen: !seen });
+      this.setState({ theme: th, role: this.ROLES[ro] ? ro : "admin", guideOpen: false });
     } catch (e) {}
     this.tick();
     this._clock = setInterval(() => this.tick(), 30000);
