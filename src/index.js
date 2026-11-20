@@ -21,10 +21,12 @@ import {
   MARKET_SIGNALS,
   MCP_TOOLS,
   FORGE_APP_ID,
+  FORGE_SCOPES,
   findDecisionCard
 } from './catalog.js';
 import {
   buildAuditEntry,
+  buildExecutiveBoardBrief,
   buildRovoDecisionCardResponse,
   buildTeamworkGraphLinks
 } from './builders.js';
@@ -255,8 +257,29 @@ export function createAcmeService({
       decisionCards: signalsBundle.decisionCards,
       auditLog: auditBundle.entries,
       workspaceConfig: signalsBundle.workspaceConfig,
-      mcpTools: MCP_TOOLS
+      mcpTools: MCP_TOOLS,
+      forgeScopes: FORGE_SCOPES
     };
+  }
+
+  async function exportBoardBrief(payload = {}, context = {}) {
+    const [signalsBundle, states, auditBundle] = await Promise.all([
+      queryAcmeSignals(payload, context),
+      getDecisionStates(store),
+      listDecisionAuditLog({ limit: 50 })
+    ]);
+    const cfg = signalsBundle.workspaceConfig || {};
+    const brief = buildExecutiveBoardBrief({
+      decisionCards: signalsBundle.decisionCards,
+      decisionStates: states,
+      auditLog: auditBundle.entries,
+      signals: signalsBundle.signals,
+      cloudId: context?.cloudId || 'workspace',
+      projectKey: payload?.projectKey || cfg.projectKey || 'ACME',
+      spaceId: payload?.spaceId || cfg.spaceId || '4021000',
+      generatedAt: now()
+    });
+    return { ok: true, ...brief };
   }
 
   async function updateWorkspaceConfig(payload = {}) {
@@ -279,6 +302,7 @@ export function createAcmeService({
     holdDecisionCard,
     listDecisionAuditLog,
     getBootstrap,
+    exportBoardBrief,
     updateWorkspaceConfig,
     mcpHandler
   };
@@ -294,8 +318,9 @@ resolver.define('querySignals', ({ payload, context }) => defaultService.queryAc
 resolver.define('approveDecision', ({ payload, context }) => defaultService.approveDecisionCard(payload, context));
 resolver.define('holdDecision', ({ payload, context }) => defaultService.holdDecisionCard(payload, context));
 resolver.define('getAuditLog', ({ payload }) => defaultService.listDecisionAuditLog(payload));
+resolver.define('exportBoardBrief', ({ payload, context }) => defaultService.exportBoardBrief(payload, context));
 resolver.define('saveWorkspaceConfig', ({ payload }) => defaultService.updateWorkspaceConfig(payload));
-resolver.define('listMcpTools', () => ({ ok: true, tools: MCP_TOOLS }));
+resolver.define('listMcpTools', () => ({ ok: true, tools: MCP_TOOLS, forgeScopes: FORGE_SCOPES }));
 
 export const handler = resolver.getDefinitions();
 

@@ -5,6 +5,65 @@
 
 export const FORGE_APP_ID = 'ari:cloud:ecosystem::app/1ccdf603-166b-400f-b0d9-6f6dab65f91a';
 
+export const FORGE_SCOPES = [
+  {
+    scope: 'storage:app',
+    product: 'Forge KVS',
+    access: 'READ / WRITE',
+    api: '@forge/kvs (acme:decision-audit-log, acme:decision-states, acme:workspace-config)',
+    rationale: 'Persists immutable executive decision receipts, card states, and workspace configuration inside Atlassian-hosted Forge storage.'
+  },
+  {
+    scope: 'read:jira-work',
+    product: 'Jira Cloud',
+    access: 'READ',
+    api: 'GET /rest/api/3/project/search',
+    rationale: 'Discovers accessible Jira projects automatically when no explicit projectKey is configured.'
+  },
+  {
+    scope: 'write:jira-work',
+    product: 'Jira Cloud',
+    access: 'WRITE',
+    api: 'POST /rest/api/3/issue (asUser)',
+    rationale: 'Dispatches structured Atlassian Document Format (ADF) Jira execution issues on executive approval.'
+  },
+  {
+    scope: 'read:page:confluence',
+    product: 'Confluence Cloud',
+    access: 'READ',
+    api: 'GET /wiki/api/v2/pages/{id}?body-format=storage',
+    rationale: 'Reads current storage XHTML and version number before appending a new executive decision block.'
+  },
+  {
+    scope: 'write:page:confluence',
+    product: 'Confluence Cloud',
+    access: 'WRITE',
+    api: 'POST /wiki/api/v2/pages & PUT /wiki/api/v2/pages/{id}',
+    rationale: 'Publishes or version-increments Confluence Decision Governance pages with status macros and KPI tables.'
+  },
+  {
+    scope: 'read:space:confluence',
+    product: 'Confluence Cloud',
+    access: 'READ',
+    api: 'GET /wiki/api/v2/spaces?limit=5',
+    rationale: 'Resolves the target Confluence Space ID automatically when workspace spaceId is unset.'
+  },
+  {
+    scope: 'read:confluence-content.all',
+    product: 'Confluence Cloud',
+    access: 'READ',
+    api: 'Confluence Global Page & Macro context lookup',
+    rationale: 'Enables the embedded Confluence Global Page and Executive Scorecard macro to resolve page metadata.'
+  },
+  {
+    scope: 'write:confluence-content',
+    product: 'Confluence Cloud',
+    access: 'WRITE',
+    api: 'Confluence Macro & Governance Record storage sync',
+    rationale: 'Permits structured storage-format governance updates scoped strictly to user-authorized Confluence spaces.'
+  }
+];
+
 export const DECISION_CARDS = [
   {
     id: 'DEC-001',

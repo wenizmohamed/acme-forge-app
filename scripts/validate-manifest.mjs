@@ -1,12 +1,12 @@
 /**
- * Static Atlassian Forge manifest & module integrity validator.
- * Verifies manifest.yml structure, scopes, Rovo agent/action cross-references,
- * function handler exports in src/index.js, and static resource paths.
+ * Static Atlassian Forge manifest, scope parity, Rovo action binding,
+ * handler export, resource path, and open-source LICENSE validator.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FORGE_SCOPES } from '../src/catalog.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -32,18 +32,21 @@ for (const mod of requiredModules) {
   }
 }
 
-const requiredScopes = [
-  'storage:app',
-  'read:jira-work',
-  'write:jira-work',
-  'read:page:confluence',
-  'write:page:confluence',
-  'read:space:confluence'
-];
+// Extract exact scopes from manifest.yml
+const scopesBlockMatch = manifestText.match(/scopes:\s*\r?\n((?:\s+-\s+[^\r\n]+\r?\n?)+)/);
+const manifestScopes = scopesBlockMatch
+  ? [...scopesBlockMatch[1].matchAll(/-\s+([^\s#]+)/g)].map((m) => m[1].trim())
+  : [];
 
-for (const scope of requiredScopes) {
-  if (!manifestText.includes(`- ${scope}`)) {
-    errors.push(`Missing required OAuth/Forge scope: ${scope}`);
+const catalogScopes = FORGE_SCOPES.map((s) => s.scope);
+for (const scope of catalogScopes) {
+  if (!manifestScopes.includes(scope)) {
+    errors.push(`Missing required least-privilege Forge scope in manifest.yml: ${scope}`);
+  }
+}
+for (const scope of manifestScopes) {
+  if (!catalogScopes.includes(scope)) {
+    errors.push(`Undocumented scope in manifest.yml not present in FORGE_SCOPES: ${scope}`);
   }
 }
 
@@ -69,12 +72,38 @@ for (const fnName of handlerMatches) {
   }
 }
 
+// Verify every Rovo Agent action key is declared in the action: block
+const agentActionsBlock = manifestText.match(/actions:\s*\r?\n((?:\s+-\s+[^\r\n]+\r?\n?)+)/);
+const agentActions = agentActionsBlock
+  ? [...agentActionsBlock[1].matchAll(/-\s+([a-z0-9-]+)/g)].map((m) => m[1])
+  : [];
+if (agentActions.length < 4) {
+  errors.push(`Expected at least 4 Rovo agent actions, found ${agentActions.length}`);
+}
+for (const actKey of agentActions) {
+  const keyRe = new RegExp(`-\\s+key:\\s*${actKey}\\b`);
+  if (!keyRe.test(manifestText)) {
+    errors.push(`Rovo agent references undeclared action key: ${actKey}`);
+  }
+}
+
 // Verify resource path exists
 const resourcePathMatch = manifestText.match(/path:\s*(.+)/);
 if (resourcePathMatch) {
   const resDir = path.join(root, resourcePathMatch[1].trim());
   if (!fs.existsSync(path.join(resDir, 'index.html'))) {
     errors.push(`Resource directory missing index.html: ${resourcePathMatch[1].trim()}`);
+  }
+}
+
+// Verify MIT LICENSE file exists at repo root
+const licensePath = path.join(root, 'LICENSE');
+if (!fs.existsSync(licensePath)) {
+  errors.push('Missing root LICENSE file');
+} else {
+  const licText = fs.readFileSync(licensePath, 'utf-8');
+  if (!/MIT License/i.test(licText)) {
+    errors.push('Root LICENSE file does not contain MIT License header');
   }
 }
 
@@ -85,5 +114,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Manifest validation PASSED: ${requiredModules.length} module families, ${requiredScopes.length} core scopes, ${handlerMatches.length} verified handlers.`
+  `Manifest validation PASSED: ${requiredModules.length} module families, ${manifestScopes.length} least-privilege scopes, ${agentActions.length} Rovo actions, ${handlerMatches.length} verified handlers, MIT LICENSE present.`
 );

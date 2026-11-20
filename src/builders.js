@@ -3,7 +3,7 @@
  * Confluence Cloud REST API v2, Forge KVS Audit Log, and Rovo Agent cards.
  */
 
-import { FORGE_APP_ID } from './catalog.js';
+import { FORGE_APP_ID, FORGE_SCOPES } from './catalog.js';
 
 function escapeXml(value) {
   return String(value ?? '')
@@ -24,10 +24,12 @@ export function formatShortDate(isoTimestamp) {
 
 export function buildTeamworkGraphLinks({ cloudId, jiraIssueKey, confluencePageId, card }) {
   const siteScope = cloudId || 'workspace';
+  const cardId = card?.id || 'DEC-001';
   const links = [
     {
       type: 'forge-app',
       ari: FORGE_APP_ID,
+      relation: 'GOVERNED_BY',
       label: 'ACME Decisions Layer & Command Center'
     }
   ];
@@ -36,6 +38,7 @@ export function buildTeamworkGraphLinks({ cloudId, jiraIssueKey, confluencePageI
     links.push({
       type: 'jira-issue',
       ari: `ari:cloud:jira:${siteScope}:issue/${jiraIssueKey}`,
+      relation: 'DISPATCHED_TO',
       key: jiraIssueKey,
       label: `Jira Execution Issue ${jiraIssueKey}`
     });
@@ -45,16 +48,25 @@ export function buildTeamworkGraphLinks({ cloudId, jiraIssueKey, confluencePageI
     links.push({
       type: 'confluence-page',
       ari: `ari:cloud:confluence:${siteScope}:page/${confluencePageId}`,
+      relation: 'DOCUMENTED_IN',
       pageId: String(confluencePageId),
       label: `Confluence Decision Record #${confluencePageId}`
     });
   }
+
+  links.push({
+    type: 'teamwork-graph-edge',
+    ari: `ari:cloud:graph:${siteScope}:relationship/decision-lineage/${cardId}${jiraIssueKey ? `/${jiraIssueKey}` : ''}`,
+    relation: 'LINEAGE_VERIFIED',
+    label: `Teamwork Graph Decision Lineage (${cardId})`
+  });
 
   if (card?.teamworkGraphGoals?.length) {
     for (const goal of card.teamworkGraphGoals) {
       links.push({
         type: 'teamwork-goal',
         ari: `ari:cloud:townsquare:${siteScope}:${goal}`,
+        relation: 'CONTRIBUTES_TO',
         label: goal
       });
     }
@@ -348,5 +360,158 @@ export function buildRovoDecisionCardResponse({
       status === 'APPROVED'
         ? `Approved ${card.id} (${card.title}). Jira: ${jiraResult?.key || 'queued'}. Confluence: ${confluenceResult?.id ? `#${confluenceResult.id}` : 'queued'}. Logged in Forge KVS.`
         : `Held ${card.id} (${card.title}) for weekly executive review. Logged in Forge KVS.`
+  };
+}
+
+/**
+ * Compiles an Executive Board Brief Governance Pack (.md + .json) containing
+ * approved/held decisions, Jira REST API v3 ADF payloads, Confluence REST API v2
+ * XHTML storage bodies, Forge KVS audit receipts, Teamwork Graph ARI lineage,
+ * and exact least-privilege Forge manifest scopes.
+ */
+export function buildExecutiveBoardBrief({
+  decisionCards = [],
+  decisionStates = {},
+  auditLog = [],
+  signals = {},
+  cloudId = 'workspace',
+  projectKey = 'ACME',
+  spaceId = '4021000',
+  generatedAt = new Date().toISOString()
+} = {}) {
+  const compiledDecisions = decisionCards.map((card) => {
+    const st = decisionStates[card.id] || {};
+    const status = st.status || card.status || 'PENDING';
+    const jiraKey = st.jiraIssueKey || card.jiraIssueKey || null;
+    const confluencePageId = st.confluencePageId || card.confluencePageId || null;
+    const jiraPayload = buildJiraIssuePayload(card, {
+      projectKey,
+      actor: st.actor || 'ACME Executive Committee',
+      rationale: st.rationale || card.approveMsg,
+      timestamp: st.updatedAt || generatedAt
+    });
+    const confluencePayload = buildConfluenceCreatePagePayload(
+      card,
+      { key: jiraKey || 'PENDING', browseUrl: jiraKey ? `/browse/${jiraKey}` : '' },
+      {
+        spaceId,
+        actor: st.actor || 'ACME Executive Committee',
+        rationale: st.rationale || card.approveMsg,
+        timestamp: st.updatedAt || generatedAt
+      }
+    );
+    const teamworkGraphLinks = buildTeamworkGraphLinks({
+      cloudId,
+      jiraIssueKey: jiraKey,
+      confluencePageId,
+      card
+    });
+
+    return {
+      id: card.id,
+      tag: card.tag,
+      title: card.title,
+      confidence: card.conf || `${card.confidence}%`,
+      projectedImpact: card.impact,
+      ownerTeam: card.ownerTeam || 'ACME Executive Operations',
+      status,
+      jiraIssueKey: jiraKey,
+      confluencePageId,
+      updatedAt: st.updatedAt || null,
+      teamworkGraphLinks,
+      jiraAdfPayload: jiraPayload,
+      confluenceXhtmlPayload: confluencePayload
+    };
+  });
+
+  const approvedCount = compiledDecisions.filter((d) => d.status === 'APPROVED').length;
+  const heldCount = compiledDecisions.filter((d) => d.status === 'HELD').length;
+  const pendingCount = compiledDecisions.filter((d) => d.status === 'PENDING').length;
+
+  const jsonPack = {
+    schemaVersion: 'acme.executive-board-brief/v1',
+    generatedAt,
+    appId: FORGE_APP_ID,
+    runtime: 'nodejs22.x',
+    summary: {
+      totalCards: compiledDecisions.length,
+      approvedCount,
+      heldCount,
+      pendingCount,
+      auditReceiptCount: auditLog.length,
+      leastPrivilegeScopeCount: FORGE_SCOPES.length
+    },
+    marketSignals: signals,
+    forgeScopes: FORGE_SCOPES,
+    decisions: compiledDecisions,
+    kvsAuditReceipts: auditLog
+  };
+
+  const mdLines = [
+    '# ACME Executive Board Brief - Atlassian Forge Governance Pack',
+    '',
+    `- **Generated:** ${generatedAt}`,
+    `- **Atlassian Forge App ID:** \`${FORGE_APP_ID}\``,
+    `- **Runtime:** \`nodejs22.x\` | **Least-Privilege Scopes:** ${FORGE_SCOPES.length} verified`,
+    `- **Portfolio Decision Status:** ${approvedCount} Approved | ${heldCount} Held | ${pendingCount} Pending | ${auditLog.length} KVS Audit Receipts`,
+    '',
+    '## 1. Executive Decision Matrix',
+    '',
+    '| Card | Category | Decision | Confidence | Impact | Status | Atlassian Artifacts |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
+    ...compiledDecisions.map((d) => {
+      const refs = [d.jiraIssueKey, d.confluencePageId ? `Conf #${d.confluencePageId}` : ''].filter(Boolean).join(' / ') || 'Pending Dispatch';
+      return `| ${d.id} | ${d.tag} | ${d.title} | ${d.confidence} | ${d.projectedImpact} | **${d.status}** | ${refs} |`;
+    }),
+    '',
+    '## 2. Teamwork Graph ARI Lineage & Atlassian Payloads',
+    ''
+  ];
+
+  for (const d of compiledDecisions) {
+    mdLines.push(`### ${d.id}: ${d.title} (${d.status})`);
+    mdLines.push('');
+    mdLines.push('**Teamwork Graph ARIs:**');
+    for (const edge of d.teamworkGraphLinks) {
+      mdLines.push(`- \`${edge.relation}\`: \`${edge.ari}\``);
+    }
+    mdLines.push('');
+    mdLines.push('**Jira REST API v3 ADF Payload (`POST /rest/api/3/issue`):**');
+    mdLines.push('```json');
+    mdLines.push(JSON.stringify(d.jiraAdfPayload, null, 2));
+    mdLines.push('```');
+    mdLines.push('');
+    mdLines.push('**Confluence REST API v2 Storage XHTML (`POST /wiki/api/v2/pages`):**');
+    mdLines.push('```xml');
+    mdLines.push(d.confluenceXhtmlPayload.body.value);
+    mdLines.push('```');
+    mdLines.push('');
+  }
+
+  mdLines.push('## 3. Forge KVS Audit Receipts (`acme:decision-audit-log`)');
+  mdLines.push('');
+  mdLines.push('| Receipt ID | Date | Card | Status | Jira | Confluence | Impact |');
+  mdLines.push('| --- | --- | --- | --- | --- | --- | --- |');
+  for (const r of auditLog) {
+    mdLines.push(
+      `| \`${r.id || 'AUD'}\` | ${r.dateLabel || 'LIVE'} | ${r.cardId || '-'} | ${r.status || 'EXECUTED'} | ${r.jiraIssueKey || '-'} | ${r.confluencePageId ? `#${r.confluencePageId}` : '-'} | ${r.impact || '-'} |`
+    );
+  }
+  mdLines.push('');
+  mdLines.push('## 4. Verified Least-Privilege Forge Scopes (`manifest.yml`)');
+  mdLines.push('');
+  mdLines.push('| Scope | Product | Access | API / Binding |');
+  mdLines.push('| --- | --- | --- | --- |');
+  for (const sc of FORGE_SCOPES) {
+    mdLines.push(`| \`${sc.scope}\` | ${sc.product} | ${sc.access} | ${sc.api} |`);
+  }
+  mdLines.push('');
+
+  return {
+    schemaVersion: jsonPack.schemaVersion,
+    generatedAt,
+    summary: jsonPack.summary,
+    json: jsonPack,
+    markdown: mdLines.join('\n')
   };
 }

@@ -3,6 +3,7 @@
 [![Devpost Submission](https://img.shields.io/badge/Devpost-Codegeist%202026%20Submission-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/acme-decisions-layer-command-center)
 [![Live Preview](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge)](https://wenizmohamed.github.io/acme-forge-app/)
 [![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/TcxlX3F-oIQ)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0F766E?style=for-the-badge)](./LICENSE)
 
 Enterprise Strategic Intelligence, **Rovo Executive Decisions Agent**, **Jira Cloud REST v3 Issue Dispatcher**, **Confluence Cloud REST v2 Decision Governance Publisher**, **Forge KVS Persistent Audit Log**, and **MCP JSON-RPC 2.0 Webtrigger Server** built on **Atlassian Forge (`nodejs22.x`)** and deployed live to Forge Production (`v3.0.0`).
 
@@ -58,8 +59,17 @@ External MCP Clients              ──► Forge Webtrigger (JSON-RPC) ──�
 ```bash
 npm install
 npm run sync:ui
-npm run verify        # runs manifest integrity validator + full Node.js unit test suite
+npm run verify        # runs manifest + scope + LICENSE validator and 29 deterministic Node.js unit tests
 ```
+
+## Rank-1 Governance & Developer Inspection Features
+
+- **Interactive Teamwork Graph & Forge Scope Inspector (`#teamwork-scope-inspector`):** Displays live ARI lineage (`ari:cloud:ecosystem::app/...` -> `ari:cloud:jira:...` -> `ari:cloud:confluence:...` -> `ari:cloud:graph:...`), all 8 exact least-privilege Forge scopes from `manifest.yml` (zero admin wildcards), and interactive JSON-RPC 2.0 MCP replay presets (`acme_query_signals`, `acme_approve_decision`, `acme_hold_decision`, `acme_get_audit_log`, plus negative `-32602` Schema Guard verification) with real JSON Schema validation.
+- **1-Click Executive Board Brief Export (`.md` + `.json`):** Compiles approved and held decisions, Jira REST API v3 ADF payloads, Confluence REST API v2 storage XHTML bodies, Forge KVS audit receipts, Teamwork Graph ARIs, and manifest scopes into a judge-downloadable governance pack (`acme.executive-board-brief/v1`).
+
+## License
+
+Released under the [MIT License](./LICENSE).
 
 ## Deploying to Atlassian Cloud (Forge CLI)
 
